@@ -1,0 +1,18 @@
+{
+  "name": "拾页 · 免费小说阅读器",
+  "short_name": "拾页",
+  "description": "搜索公共领域作品，收藏到书架，并用左右翻页或上下滚动阅读。",
+  "lang": "zh-CN",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4f0e8",
+  "theme_color": "#1f4035",
+  "icons": [
+    {
+      "src": "./assets/app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

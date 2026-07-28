@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#f4f0e8" />
+    <meta name="description" content="拾页，一款支持公共领域书源搜索、本地 TXT 导入和双模式阅读的免费小说阅读器。" />
+    <title>拾页 · 免费小说阅读器</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./assets/app-icon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell" id="appShell">
+      <aside class="sidebar" aria-label="主导航">
+        <a class="brand" href="#home" data-nav="home" aria-label="拾页首页">
+          <span class="brand-mark">拾</span>
+          <span>
+            <strong>拾页</strong>
+            <small>SHIYE READER</small>
+          </span>
+        </a>
+
+        <nav class="side-nav">
+          <button class="nav-item active" type="button" data-view="home">
+            <i data-lucide="house"></i><span>首页</span>
+          </button>
+          <button class="nav-item" type="button" data-view="search">
+            <i data-lucide="compass"></i><span>发现</span>
+          </button>
+          <button class="nav-item" type="button" data-view="official">
+            <i data-lucide="store"></i><span>官方书城</span>
+          </button>
+          <button class="nav-item" type="button" data-view="shelf">
+            <i data-lucide="library-big"></i><span>书架</span>
+            <span class="nav-count" id="shelfCount">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+
+        <div class="source-note">
+          <i data-lucide="badge-check"></i>
+          <div><strong>开放书源</strong><span>公共领域与自由授权</span></div>
+        </div>
+
+        <button class="sidebar-action" id="importButton" type="button">
+          <i data-lucide="file-up"></i><span>导入本地 TXT</span>
+        </button>
+        <input id="fileInput" type="file" accept=".txt,text/plain" hidden />
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <a class="mobile-brand" href="#home" data-nav="home" aria-label="拾页首页">
+            <span class="brand-mark">拾</span><strong>拾页</strong>
+          </a>
+
+          <form class="global-search" id="searchForm" role="search">
+            <i data-lucide="search"></i>
+            <input
+              id="searchInput"
+              type="search"
+              autocomplete="off"
+              placeholder="搜索书名、作者或关键词"
+              aria-label="搜索免费小说"
+            />
+            <kbd>Enter</kbd>
+            <button class="search-submit" type="submit" title="搜索" aria-label="搜索">
+              <i data-lucide="arrow-right"></i>
+            </button>
+          </form>
+
+          <div class="top-actions">
+            <button class="icon-button mobile-import" id="mobileImportButton" type="button" title="导入本地 TXT" aria-label="导入本地 TXT">
+              <i data-lucide="file-up"></i>
+            </button>
+            <button class="icon-button" id="themeToggle" type="button" title="切换明暗主题" aria-label="切换明暗主题">
+              <i data-lucide="moon"></i>
+            </button>
+          </div>
+        </header>
+
+        <section class="app-view active" id="homeView" data-view-panel="home">
+          <div class="page-heading home-heading">
+            <div>
+              <span class="eyebrow">你的私人书房</span>
+              <h1 id="homeGreeting">今天想读点什么？</h1>
+              <p>从开放书库发现作品，或继续上次的章节。</p>
+            </div>
+            <button class="text-button" type="button" data-view="search">
+              浏览全部<i data-lucide="arrow-right"></i>
+            </button>
+          </div>
+
+          <section class="continue-band hidden" id="continueSection" aria-labelledby="continueTitle">
+            <div class="section-heading">
+              <div><span class="section-kicker">CONTINUE</span><h2 id="continueTitle">继续阅读</h2></div>
+            </div>
+            <div id="continueCard"></div>
+          </section>
+
+          <section class="content-section" aria-labelledby="featuredTitle">
+            <div class="section-heading">
+              <div><span class="section-kicker">OPEN LIBRARY</span><h2 id="featuredTitle">公共领域热门作品</h2></div>
+              <span class="source-label"><i data-lucide="globe-2"></i> 实时开放书源</span>
+            </div>
+            <div class="book-grid" id="featuredGrid" aria-live="polite"></div>
+          </section>
+        </section>
+
+        <section class="app-view" id="searchView" data-view-panel="search">
+          <div class="page-heading search-heading">
+            <div>
+              <span class="eyebrow">发现免费作品</span>
+              <h1>搜索书库</h1>
+              <p id="searchSummary">同时检索 Gutenberg、Open Library 与中文维基文库。</p>
+            </div>
+          </div>
+
+          <div class="filter-bar" role="group" aria-label="书源筛选">
+            <button class="filter-chip active" type="button" data-source="all">全部书源</button>
+            <button class="filter-chip" type="button" data-source="gutenberg">Gutenberg</button>
+            <button class="filter-chip" type="button" data-source="openlibrary">Open Library</button>
+            <button class="filter-chip" type="button" data-source="wikisource">中文维基文库</button>
+            <span class="filter-spacer"></span>
+            <span class="rights-hint"><i data-lucide="shield-check"></i> 仅展示可免费访问的开放内容</span>
+          </div>
+
+          <div class="book-grid search-grid" id="searchGrid" aria-live="polite"></div>
+          <button class="load-more hidden" id="loadMoreButton" type="button">
+            <i data-lucide="refresh-cw"></i>加载更多
+          </button>
+        </section>
+
+        <section class="app-view" id="officialView" data-view-panel="official">
+          <div class="page-heading official-heading">
+            <div>
+              <span class="eyebrow">OFFICIAL CHANNELS</span>
+              <h1>官方书城</h1>
+              <p>从拾页进入官方平台，阅读、登录和授权由平台负责。</p>
+            </div>
+          </div>
+
+          <form class="official-search-form" id="officialSearchForm" role="search">
+            <i data-lucide="search"></i>
+            <input id="officialSearchInput" type="search" autocomplete="off" placeholder="输入作品名，生成官方搜索入口" aria-label="搜索官方平台" />
+            <button class="primary-button" type="submit"><i data-lucide="arrow-right"></i>搜索官方平台</button>
+          </form>
+
+          <div class="official-channel-note">
+            <i data-lucide="shield-check"></i>
+            <span>这是官方站点入口集合，不抓取或转存平台正文。</span>
+          </div>
+          <div class="official-platform-grid" id="officialSearchGrid" aria-live="polite"></div>
+        </section>
+
+        <section class="app-view" id="shelfView" data-view-panel="shelf">
+          <div class="page-heading shelf-heading">
+            <div>
+              <span class="eyebrow">只属于你的收藏</span>
+              <h1>我的书架</h1>
+              <p id="shelfSummary">书架还是空的。</p>
+            </div>
+            <button class="primary-button" id="shelfImportButton" type="button">
+              <i data-lucide="file-up"></i>导入 TXT
+            </button>
+          </div>
+          <div class="shelf-toolbar hidden" id="shelfToolbar">
+            <div class="segmented-control" role="group" aria-label="书架排序">
+              <button class="active" type="button" data-sort="recent">最近阅读</button>
+              <button type="button" data-sort="added">收藏时间</button>
+              <button type="button" data-sort="title">书名</button>
+            </div>
+          </div>
+          <div class="book-grid shelf-grid" id="shelfGrid"></div>
+        </section>
+      </main>
+
+      <nav class="bottom-nav" aria-label="移动端导航">
+        <button class="active" type="button" data-view="home"><i data-lucide="house"></i><span>首页</span></button>
+        <button type="button" data-view="search"><i data-lucide="compass"></i><span>发现</span></button>
+        <button type="button" data-view="official"><i data-lucide="store"></i><span>书城</span></button>
+        <button type="button" data-view="shelf"><i data-lucide="library-big"></i><span>书架</span></button>
+      </nav>
+    </div>
+
+    <section class="reader" id="reader" aria-hidden="true">
+      <header class="reader-header">
+        <button class="icon-button reader-back" id="readerBack" type="button" title="返回书架" aria-label="返回书架">
+          <i data-lucide="arrow-left"></i>
+        </button>
+        <div class="reader-book-meta">
+          <strong id="readerTitle">书名</strong>
+          <span id="readerAuthor">作者</span>
+        </div>
+        <div class="reader-actions">
+          <button class="icon-button" id="readerModeToggle" type="button" title="切换阅读模式" aria-label="切换阅读模式">
+            <i data-lucide="columns-2"></i>
+          </button>
+          <button class="icon-button" id="readerSettingsButton" type="button" title="阅读设置" aria-label="阅读设置">
+            <i data-lucide="sliders-horizontal"></i>
+          </button>
+          <button class="icon-button" id="readerFullscreen" type="button" title="全屏阅读" aria-label="全屏阅读">
+            <i data-lucide="maximize"></i>
+          </button>
+        </div>
+      </header>
+
+      <div class="reader-progress-track"><span id="readerProgressBar"></span></div>
+
+      <div class="reader-stage" id="readerStage">
+        <button class="page-tap-zone page-prev" id="pagePrev" type="button" aria-label="上一页"></button>
+        <article class="reader-document paged" id="readerDocument" tabindex="0" aria-label="小说正文"></article>
+        <button class="page-tap-zone page-next" id="pageNext" type="button" aria-label="下一页"></button>
+
+        <div class="reader-loading hidden" id="readerLoading" role="status">
+          <span class="loading-mark">拾</span>
+          <strong>正在取回正文</strong>
+          <small>从开放书源读取内容…</small>
+        </div>
+
+        <div class="reader-error hidden" id="readerError" role="alert">
+          <i data-lucide="circle-alert"></i>
+          <h2>正文暂时无法读取</h2>
+          <p id="readerErrorMessage">可以稍后重试，或前往原始书源阅读。</p>
+          <div>
+            <button class="secondary-button" id="readerRetry" type="button"><i data-lucide="refresh-cw"></i>重试</button>
+            <a class="primary-button" id="readerSourceLink" href="#" target="_blank" rel="noopener noreferrer"><i data-lucide="external-link"></i>打开原始书源</a>
+          </div>
+        </div>
+      </div>
+
+      <footer class="reader-footer">
+        <span id="readerPosition">第 1 页</span>
+        <span class="reader-hint" id="readerHint">点击两侧或使用方向键翻页</span>
+        <span id="readerPercent">0%</span>
+      </footer>
+    </section>
+
+    <div class="drawer-backdrop" id="drawerBackdrop"></div>
+    <aside class="settings-drawer" id="settingsDrawer" aria-hidden="true" aria-label="阅读设置">
+      <div class="drawer-header">
+        <h2>阅读设置</h2>
+        <button class="icon-button" id="closeSettings" type="button" title="关闭" aria-label="关闭阅读设置">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <div class="setting-group">
+        <label>翻页方式</label>
+        <div class="segmented-control wide" id="modeControl">
+          <button type="button" data-mode="paged"><i data-lucide="columns-2"></i>左右翻页</button>
+          <button type="button" data-mode="scroll"><i data-lucide="move-vertical"></i>上下滚动</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <label>阅读主题</label>
+        <div class="theme-swatches" id="readerThemeControl">
+          <button type="button" data-reader-theme="paper" title="纸张" aria-label="纸张主题"><span class="swatch paper"></span>纸张</button>
+          <button type="button" data-reader-theme="white" title="明亮" aria-label="明亮主题"><span class="swatch white"></span>明亮</button>
+          <button type="button" data-reader-theme="night" title="夜间" aria-label="夜间主题"><span class="swatch night"></span>夜间</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row"><label for="fontSizeRange">字号</label><output id="fontSizeOutput">19px</output></div>
+        <input id="fontSizeRange" type="range" min="16" max="30" step="1" value="19" />
+      </div>
+
+      <div class="setting-group">
+        <div class="setting-label-row"><label for="lineHeightRange">行距</label><output id="lineHeightOutput">1.9</output></div>
+        <input id="lineHeightRange" type="range" min="1.5" max="2.4" step="0.1" value="1.9" />
+      </div>
+
+      <div class="setting-group">
+        <label>字体</label>
+        <div class="segmented-control wide" id="fontControl">
+          <button type="button" data-font="serif">宋体</button>
+          <button type="button" data-font="sans">黑体</button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+
+    <template id="bookCardTemplate">
+      <article class="book-card">
+        <button class="cover-button" type="button" data-action="read" aria-label="开始阅读">
+          <div class="book-cover"><span class="cover-source"></span><strong class="cover-title"></strong><small class="cover-author"></small></div>
+          <span class="book-progress"><span></span></span>
+        </button>
+        <div class="book-info">
+          <div class="book-title-row">
+            <button class="book-title" type="button" data-action="read"></button>
+            <button class="save-button" type="button" data-action="save" title="加入书架" aria-label="加入书架"><i data-lucide="bookmark"></i></button>
+          </div>
+          <p class="book-author"></p>
+          <div class="book-meta"><span class="source-badge"></span><span class="language-badge"></span></div>
+        </div>
+      </article>
+    </template>
+
+    <script src="./assets/lucide.min.js"></script>
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>
